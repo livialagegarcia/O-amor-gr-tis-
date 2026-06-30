@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>O amor é - PDFs</title>
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+  <style>
+    :root {
+      --blue: #124a9c;
+      --blue-dark: #0b3270;
+      --blue-soft: #eef5ff;
+      --text: #172033;
+      --muted: #5f6f85;
+      --border: #d7e0ec;
+      --danger: #b42318;
+      --success: #146c3b;
+      --card: #ffffff;
+      --bg: #f2f6fb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background: linear-gradient(135deg, #eaf3ff, var(--bg));
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 32px auto;
+    }
+
+    header {
+      margin-bottom: 22px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      color: var(--blue-dark);
+      font-size: clamp(1.7rem, 4vw, 2.45rem);
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      background: var(--card);
+      box-shadow: 0 12px 30px rgba(18, 74, 156, .08);
+    }
+
+    .panel.full {
+      grid-column: 1 / -1;
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      color: var(--blue-dark);
+      font-size: 1.2rem;
+    }
+
+    .description {
+      margin: 0 0 16px;
+      color: var(--muted);
+      font-size: .95rem;
+      line-height: 1.45;
+    }
+
+    .drop-zone {
+      display: grid;
+      place-items: center;
+      min-height: 132px;
+      padding: 18px;
+      border: 2px dashed #78a0d7;
+      border-radius: 14px;
+      background: #f7fbff;
+      text-align: center;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--blue);
+      background: var(--blue-soft);
+      transform: translateY(-1px);
+    }
+
+    .drop-zone strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--blue-dark);
+    }
+
+    .drop-zone span {
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
+    input[type="file"] { display: none; }
+
+    .file-list {
+      display: grid;
+      gap: 8px;
+      margin: 14px 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .file-list:empty { display: none; }
+
+    .file-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .file-list li[draggable="true"] {
+      cursor: grab;
+    }
+
+    .file-list li.dragging {
+      opacity: .45;
+      border-style: dashed;
+    }
+
+    .drag-handle {
+      color: #6d829e;
+      user-select: none;
+      font-size: 1.15rem;
+      line-height: 1;
+    }
+
+    .file-name {
+      flex: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font-size: .92rem;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      transition: .18s ease;
+      min-height: 44px;
+    }
+
+    button:hover:not(:disabled) { transform: translateY(-1px); }
+
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      color: #fff;
+      background: var(--blue);
+    }
+
+    .primary:hover:not(:disabled) { background: var(--blue-dark); }
+
+    .secondary {
+      color: var(--blue-dark);
+      background: #e6f0ff;
+    }
+
+    .remove {
+      padding: 7px 10px;
+      color: var(--danger);
+      background: #fff0ef;
+      font-size: .83rem;
+      min-height: unset;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .merge-image-button {
+      padding: 0;
+      width: 180px;
+      height: 44px;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid #b8c8df;
+      background: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .merge-image-button img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .input-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0;
+      align-items: center;
+    }
+
+    .text-input {
+      flex: 1 1 220px;
+      min-height: 42px;
+      padding: 10px 12px;
+      border: 1px solid #bdcbdf;
+      border-radius: 10px;
+      color: var(--text);
+      font: inherit;
+    }
+
+    .hint {
+      margin: 8px 0 12px;
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.4;
+    }
+
+    .status {
+      min-height: 22px;
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: .92rem;
+      line-height: 1.4;
+    }
+
+    .status.success { color: var(--success); }
+    .status.error { color: var(--danger); }
+
+    footer {
+      margin: 22px 0 0;
+      color: var(--muted);
+      font-size: .82rem;
+      text-align: center;
+    }
+
+    @media (max-width: 740px) {
+      main { width: min(100% - 20px, 1080px); margin: 16px auto; }
+      .grid { grid-template-columns: 1fr; }
+      .panel.full { grid-column: auto; }
+      .merge-image-button { width: 100%; }
+    }
+  
+    .split-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 12px 0 10px;
+      align-items: center;
+    }
+
+    .parts-title {
+      margin: 16px 0 8px;
+      color: var(--blue-dark);
+      font-size: .95rem;
+      font-weight: 700;
+    }
+
+    .parts-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      min-height: 38px;
+      margin-bottom: 14px;
+    }
+
+    .part-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 8px 10px;
+      border: 1px solid #bcd0ed;
+      border-radius: 999px;
+      color: #123e7b;
+      background: #eef5ff;
+      font-size: .86rem;
+      line-height: 1.15;
+    }
+
+    .part-chip strong { color: var(--blue-dark); }
+
+    .thumbs-wrap {
+      display: none;
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .thumbs-wrap.visible { display: block; }
+
+    .thumbs-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .thumbs-header h3 {
+      margin: 0;
+      color: var(--blue-dark);
+      font-size: 1rem;
+    }
+
+    .thumb-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .small-button {
+      min-height: 34px;
+      padding: 7px 10px;
+      border: 1px solid #bcd0ed;
+      color: #123e7b;
+      background: #fff;
+      font-size: .8rem;
+    }
+
+    .thumbnail-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+      gap: 10px;
+      max-height: 430px;
+      overflow: auto;
+      padding: 3px;
+    }
+
+    .page-thumb {
+      position: relative;
+      min-height: 142px;
+      padding: 7px;
+      border: 2px solid #d5e0ee;
+      border-radius: 11px;
+      background: #f9fbfe;
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      overflow: hidden;
+    }
+
+    .page-thumb:hover { border-color: #7ca4d9; }
+
+    .page-thumb.selected {
+      border-color: var(--blue);
+      background: #eaf3ff;
+      box-shadow: 0 3px 10px rgba(18, 74, 156, .14);
+    }
+
+    .page-thumb canvas {
+      display: block;
+      width: 100%;
+      height: 112px;
+      object-fit: contain;
+      background: #fff;
+      border-radius: 5px;
+    }
+
+    .page-number {
+      display: block;
+      margin-top: 6px;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    .page-part-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      min-width: 24px;
+      padding: 3px 6px;
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: .72rem;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .preview-note {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.35;
+    }
+
+  
+    .interval-editor {
+      display: grid;
+      gap: 10px;
+      margin: 14px 0 10px;
+    }
+
+    .interval-card {
+      display: grid;
+      grid-template-columns: auto minmax(72px, 1fr) auto minmax(72px, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 11px;
+      border: 1px solid #c6d8ee;
+      border-radius: 12px;
+      background: #f8fbff;
+    }
+
+    .interval-card.auto {
+      grid-template-columns: auto 1fr auto;
+      border-style: dashed;
+      background: #f1f6fd;
+    }
+
+    .interval-card label {
+      color: var(--blue-dark);
+      font-size: .85rem;
+      font-weight: 700;
+    }
+
+    .interval-card .text-input {
+      min-width: 0;
+      min-height: 38px;
+      padding: 8px 10px;
+    }
+
+    .interval-label {
+      color: var(--muted);
+      font-size: .82rem;
+      white-space: nowrap;
+    }
+
+    .interval-range {
+      color: var(--blue-dark);
+      font-size: .9rem;
+      font-weight: 700;
+    }
+
+    .part-select {
+      min-width: 19px;
+      min-height: 19px;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+
+    .part-select-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--blue-dark);
+      font-size: .84rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .interval-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .interval-error {
+      margin: 4px 0 0;
+      color: var(--danger);
+      font-size: .84rem;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 520px) {
+      .interval-card {
+        grid-template-columns: 1fr 1fr;
+      }
+      .interval-card label { grid-column: 1 / -1; }
+      .interval-card .remove { justify-self: end; }
+      .interval-card.auto { grid-template-columns: 1fr; }
+    }
+
+  
+    .parts-header {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 16px 0 8px;
+    }
+
+    .parts-header .parts-title {
+      margin: 0;
+    }
+
+    .parts-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .compact-action {
+      min-height: 36px;
+      padding: 8px 10px;
+      font-size: .83rem;
+    }
+
+    @media (max-width: 560px) {
+      .parts-header {
+        align-items: flex-start;
+      }
+
+      .parts-header-actions {
+        width: 100%;
+      }
+
+      .compact-action {
+        flex: 1 1 150px;
+      }
+    }
+
+  
+    /* Tema visual original inspirado em interfaces de streaming: fundo escuro, contraste alto e destaque verde. */
+    :root {
+      --blue: #ff2d55;
+      --blue-dark: #ff2d55;
+      --blue-soft: #3a1019;
+      --text: #f5f5f5;
+      --muted: #b3b3b3;
+      --border: #303030;
+      --danger: #ff6b6b;
+      --success: #ff4d6d;
+      --card: #181818;
+      --bg: #000000;
+    }
+
+    body {
+      color: var(--text);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(255, 45, 85, .20), transparent 29rem),
+        linear-gradient(180deg, #18080b 0%, #000 44rem);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 36px));
+      margin: 0 auto;
+      padding: 26px 0 44px;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      margin: 0 0 22px;
+      padding: clamp(28px, 5vw, 56px);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 87% 24%, rgba(255,45,85,.42), transparent 15rem),
+        linear-gradient(120deg, #2a0d13, #121212 68%);
+      box-shadow: 0 22px 42px rgba(0,0,0,.35);
+    }
+
+       .brand-line {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 21px;
+      font-weight: 800;
+      letter-spacing: .08em;
+    }
+
+    .brand-mark {
+      display: inline-grid;
+      place-items: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      color: #000;
+      background: #ff2d55;
+      font-size: 1rem;
+    }
+
+    .brand-name {
+      font-size: .98rem;
+      color: #fff;
+    }
+
+    .brand-tag {
+      padding: 4px 8px;
+      border: 1px solid rgba(255,255,255,.18);
+      border-radius: 999px;
+      color: #b3b3b3;
+      font-size: .68rem;
+    }
+
+    .hero h1 {
+      position: relative;
+      z-index: 1;
+      max-width: 750px;
+      margin: 0 0 12px;
+      color: #fff;
+      font-size: clamp(2.1rem, 6.2vw, 4.65rem);
+      line-height: .97;
+      letter-spacing: -.055em;
+    }
+
+    .hero .subtitle {
+      position: relative;
+      z-index: 1;
+      max-width: 650px;
+      color: #d1d1d1;
+      font-size: 1.04rem;
+    }
+
+    .hero-pills {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      margin-top: 25px;
+    }
+
+    .hero-pills span {
+      padding: 8px 11px;
+      border-radius: 999px;
+      color: #dedede;
+      background: rgba(255,255,255,.09);
+      font-size: .8rem;
+      font-weight: 700;
+    }
+
+    .grid {
+      gap: 16px;
+    }
+
+    .panel {
+      border: 1px solid #292929;
+      border-radius: 16px;
+      background: linear-gradient(145deg, #202020, #181818 55%);
+      box-shadow: none;
+    }
+
+    .panel:hover {
+      border-color: #3d3d3d;
+    }
+
+    h2 {
+      color: #fff;
+      letter-spacing: -.02em;
+      font-size: 1.28rem;
+    }
+
+    .description,
+    .hint,
+    .preview-note,
+    footer {
+      color: #b3b3b3;
+    }
+
+    .drop-zone {
+      border-color: #454545;
+      border-radius: 12px;
+      background: #121212;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: #ff4d6d;
+      background: #3a1019;
+      transform: none;
+    }
+
+    .drop-zone strong,
+    .drop-zone span {
+      color: #f5f5f5;
+    }
+
+    .drop-zone span {
+      color: #b3b3b3;
+    }
+
+    .file-list li,
+    .interval-card,
+    .interval-card.auto,
+    .page-thumb {
+      border-color: #393939;
+      background: #232323;
+    }
+
+    .file-name,
+    .interval-label,
+    .interval-range,
+    .parts-title,
+    .part-select-label,
+    .page-number {
+      color: #f5f5f5;
+    }
+
+    .drag-handle {
+      color: #ff4d6d;
+    }
+
+    .primary {
+      color: #000;
+      background: #ff2d55;
+    }
+
+    .primary:hover:not(:disabled) {
+      color: #000;
+      background: #3df177;
+    }
+
+    .secondary,
+    .small-button {
+      color: #fff;
+      border: 1px solid #505050;
+      background: #2a2a2a;
+    }
+
+    .secondary:hover:not(:disabled),
+    .small-button:hover:not(:disabled) {
+      border-color: #8a8a8a;
+      background: #343434;
+    }
+
+    .remove {
+      color: #ff8b8b;
+      background: #3a2020;
+    }
+
+    .merge-image-button {
+      width: 180px;
+      height: 44px;
+      border-color: #ff4d6d;
+      background: #111;
+      box-shadow: 0 0 0 1px rgba(255,45,85,.14);
+    }
+
+    .merge-image-button:hover:not(:disabled) {
+      transform: translateY(-1px) scale(1.01);
+      box-shadow: 0 8px 20px rgba(255,45,85,.18);
+    }
+
+    .text-input {
+      border-color: #4a4a4a;
+      color: #fff;
+      background: #101010;
+    }
+
+    .text-input:focus {
+      outline: 2px solid #ff2d55;
+      outline-offset: 1px;
+      border-color: #ff4d6d;
+    }
+
+    .part-chip {
+      border-color: #3a5e45;
+      color: #f5f5f5;
+      background: #31131a;
+    }
+
+    .part-chip strong {
+      color: #ff4d6d;
+    }
+
+    .page-thumb.selected {
+      border-color: #ff4d6d;
+      background: #341018;
+      box-shadow: 0 5px 16px rgba(255,45,85,.18);
+    }
+
+    .page-part-badge {
+      color: #000;
+      background: #ff2d55;
+    }
+
+    .thumbs-wrap {
+      border-color: #333;
+    }
+
+    .thumbnail-grid {
+      scrollbar-color: #535353 #151515;
+    }
+
+    .status.success { color: #ff4d6d; }
+    .status.error,
+    .interval-error { color: #ff8b8b; }
+
+    button:focus-visible,
+    .drop-zone:focus-within {
+      outline: 2px solid #ff2d55;
+      outline-offset: 3px;
+    }
+
+    footer {
+      border-top: 1px solid #222;
+      padding-top: 18px;
+    }
+
+    @media (max-width: 740px) {
+      main {
+        width: min(100% - 20px, 1180px);
+        padding-top: 12px;
+      }
+
+      .hero {
+        border-radius: 16px;
+      }
+    }
+
+  </style>
+
+  <style>
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      font-size: 1.25rem;
+      color: #fff;
+      background: #ff2d55;
+      box-shadow: 0 8px 20px rgba(255,45,85,.25);
+    }
+
+    .brand-name {
+      font-size: 1.1rem;
+      color: #fff;
+    }
+
+    .brand-tag {
+      color: #ffd8df;
+      border-color: rgba(255,255,255,.16);
+      background: rgba(255,45,85,.12);
+    }
+
+    button {
+      min-height: 54px;
+      padding: 14px 18px;
+      font-size: .98rem;
+      border-radius: 14px;
+    }
+
+    .remove,
+    .small-button,
+    .compact-action {
+      min-height: 44px;
+      padding: 10px 14px;
+      border-radius: 12px;
+    }
+
+    .merge-image-button {
+      width: 220px;
+      height: 54px;
+      border-radius: 14px;
+    }
+
+    .hero-pills span {
+      background: rgba(255,45,85,.14);
+      color: #ffe8ec;
+    }
+
+    .secondary, .small-button {
+      background: #2a1419;
+      border-color: #5b2632;
+    }
+
+    .secondary:hover:not(:disabled),
+    .small-button:hover:not(:disabled) {
+      background: #38181f;
+      border-color: #8d3448;
+    }
+
+    .panel {
+      background: linear-gradient(145deg, #1a1113, #121212 55%);
+    }
+  </style>
+
+
+  <style>
+    .merge-image-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      letter-spacing: .01em;
+      background: #ff2d55;
+      border-color: #ff2d55;
+    }
+
+    .merge-image-button:hover:not(:disabled) {
+      color: #fff;
+      background: #ff4d6d;
+    }
+
+    .merge-image-button img {
+      display: none;
+    }
+  </style>
+
+
+  <style>
+    body,
+    h1, h2, h3, h4, h5, h6,
+    p, span, strong, label, li, ul, div, footer,
+    .subtitle, .description, .hint, .preview-note, .status,
+    .file-name, .interval-label, .interval-range, .parts-title,
+    .page-number, .brand-name, .brand-tag, .hero-pills span,
+    .drop-zone strong, .drop-zone span, .part-chip, .part-chip strong,
+    .text-input, .secondary, .small-button, .compact-action {
+      color: #ffffff !important;
+    }
+
+    .text-input::placeholder {
+      color: rgba(255,255,255,.72) !important;
+    }
+
+    .brand-line {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-heart-logo {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 96px;
+      height: 86px;
+      color: #ffffff !important;
+      font-size: .92rem;
+      font-weight: 800;
+      letter-spacing: .01em;
+      line-height: 1;
+      text-align: center;
+      filter: drop-shadow(0 10px 20px rgba(255,45,85,.26));
+    }
+
+    .brand-heart-logo::before,
+    .brand-heart-logo::after {
+      content: "";
+      position: absolute;
+      width: 48px;
+      height: 74px;
+      background: #c70a2e;
+      border-radius: 48px 48px 0 0;
+      top: 6px;
+      z-index: -1;
+    }
+
+    .brand-heart-logo::before {
+      left: 48px;
+      transform: rotate(-45deg);
+      transform-origin: 0 100%;
+    }
+
+    .brand-heart-logo::after {
+      left: 0;
+      transform: rotate(45deg);
+      transform-origin: 100% 100%;
+    }
+
+    .brand-tag {
+      background: rgba(255,45,85,.12);
+      border-color: rgba(255,255,255,.14);
+    }
+
+    .drop-zone,
+    .panel,
+    .file-list li,
+    .interval-card,
+    .interval-card.auto,
+    .page-thumb,
+    .part-chip {
+      color: #ffffff !important;
+    }
+
+    .page-part-badge {
+      color: #ffffff !important;
+    }
+  </style>
+
+
+  <style>
+    .hero h1 {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-line {
+      display: none !important;
+    }
+
+    .title-heart-logo {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      vertical-align: middle;
+      width: 102px;
+      height: 92px;
+      margin: 0 4px;
+      color: #ffffff !important;
+      font-size: .86rem;
+      font-weight: 800;
+      letter-spacing: 0;
+      line-height: 1;
+      text-align: center;
+      transform: translateY(2px);
+      filter: drop-shadow(0 10px 20px rgba(255,45,85,.26));
+      z-index: 0;
+    }
+
+    .title-heart-logo::before,
+    .title-heart-logo::after {
+      content: "";
+      position: absolute;
+      width: 50px;
+      height: 78px;
+      background: #c70a2e;
+      border-radius: 50px 50px 0 0;
+      top: 5px;
+      z-index: -1;
+    }
+
+    .title-heart-logo::before {
+      left: 51px;
+      transform: rotate(-45deg);
+      transform-origin: 0 100%;
+    }
+
+    .title-heart-logo::after {
+      left: 1px;
+      transform: rotate(45deg);
+      transform-origin: 100% 100%;
+    }
+
+    .title-heart-logo {
+      padding-top: 4px;
+    }
+
+    @media (max-width: 740px) {
+      .hero h1 {
+        gap: 10px;
+      }
+
+      .title-heart-logo {
+        width: 92px;
+        height: 84px;
+        font-size: .8rem;
+      }
+
+      .title-heart-logo::before,
+      .title-heart-logo::after {
+        width: 45px;
+        height: 72px;
+      }
+
+      .title-heart-logo::before {
+        left: 46px;
+      }
+    }
+  </style>
+
+
+  <style>
+    .title-heart-logo {
+      width: 112px;
+      height: 100px;
+      font-size: clamp(2.1rem, 6.2vw, 4.65rem);
+      transform: translateY(0);
+      line-height: 1;
+    }
+
+    .title-heart-logo::before,
+    .title-heart-logo::after {
+      width: 55px;
+      height: 86px;
+      top: 4px;
+    }
+
+    .title-heart-logo::before {
+      left: 56px;
+    }
+
+    .title-heart-logo::after {
+      left: 1px;
+    }
+
+    @media (max-width: 740px) {
+      .title-heart-logo {
+        width: 102px;
+        height: 92px;
+        font-size: .96rem;
+        padding-top: 8px;
+      }
+
+      .title-heart-logo::before,
+      .title-heart-logo::after {
+        width: 50px;
+        height: 80px;
+      }
+
+      .title-heart-logo::before {
+        left: 51px;
+      }
+    }
+  </style>
+
+
+  <style>
+    .title-heart-logo {
+      margin-left: .16em;
+    }
+
+    @media (max-width: 740px) {
+      .title-heart-logo {
+        margin-left: .12em;
+      }
+    }
+  </style>
+
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <h1>
+        O amor é <span class="title-heart-logo" aria-label="Logotipo grátis">grátis</span>
+        — PDFs para todos.
+      </h1>
+      <p class="subtitle">Una, converta e divida documentos diretamente no navegador.</p>
+      <div class="hero-pills" aria-label="Recursos">
+        <span>Processamento local</span>
+        <span>Sem envio de arquivos</span>
+        <span>Pré-visualização de páginas</span>
+      </div>
+    </header>
+
+    <section class="grid">
+      <article class="panel full">
+        <h2>Unir PDFs</h2>
+        <p class="description">Arraste os arquivos abaixo. Você também pode reorganizar a ordem arrastando cada item da lista.</p>
+
+        <label class="drop-zone" id="mergeDropZone" for="mergeInput">
+          <div>
+            <strong>Arraste PDFs aqui ou clique para selecionar</strong>
+            <span>São necessários pelo menos dois arquivos.</span>
+          </div>
+          <input id="mergeInput" type="file" accept="application/pdf,.pdf" multiple />
+        </label>
+
+        <ul class="file-list" id="mergeList"></ul>
+
+        <div class="actions">
+          <button class="secondary" type="button" id="clearMergeBtn" disabled>Limpar lista</button>
+          <button class="merge-image-button" id="mergeBtn" type="button" disabled aria-label="Unir PDFs">Unir PDFs</button>
+        </div>
+
+        <p class="hint">Use o ícone ⠿ para alterar a sequência dos arquivos antes de gerar o documento final.</p>
+        <p class="status" id="mergeStatus" aria-live="polite"></p>
+      </article>
+
+      <article class="panel">
+        <h2>Converter imagens em PDF</h2>
+        <p class="description">Selecione imagens JPG, PNG ou WEBP. Cada imagem será adicionada como uma página do PDF.</p>
+
+        <label class="drop-zone" id="imageDropZone" for="imageInput">
+          <div>
+            <strong>Arraste imagens aqui ou clique para selecionar</strong>
+            <span>JPG, PNG e WEBP.</span>
+          </div>
+          <input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" multiple />
+        </label>
+
+        <ul class="file-list" id="imageList"></ul>
+
+        <div class="actions">
+          <button class="primary" id="imagesToPdfBtn" type="button" disabled>Converter imagens em PDF</button>
+          <button class="secondary" id="clearImagesBtn" type="button" disabled>Limpar lista</button>
+        </div>
+
+        <p class="status" id="imageStatus" aria-live="polite"></p>
+      </article>
+
+      <article class="panel">
+        <h2>Dividir PDF</h2>
+        <p class="description">Defina os cortes em caixas. A última caixa sempre recebe automaticamente todas as páginas restantes do documento.</p>
+
+        <label class="drop-zone" id="splitDropZone" for="splitInput">
+          <div>
+            <strong>Arraste um PDF aqui ou clique para selecionar</strong>
+            <span>Selecione apenas um arquivo.</span>
+          </div>
+          <input id="splitInput" type="file" accept="application/pdf,.pdf" />
+        </label>
+
+        <ul class="file-list" id="splitList"></ul>
+
+        <div class="interval-editor" id="intervalEditor"></div>
+        <div class="interval-actions">
+          <button class="secondary" id="addIntervalBtn" type="button" disabled>Adicionar intervalo</button>
+        </div>
+
+        <p class="hint">Exemplo: defina a primeira caixa até a página 3 e a segunda até a página 7. A última caixa será criada automaticamente com as páginas 8 até o fim.</p>
+        <p class="interval-error" id="intervalError"></p>
+
+        <div class="parts-header">
+          <div class="parts-title">Partes identificadas</div>
+          <div class="parts-header-actions">
+            <button class="secondary compact-action" id="selectAllPartsBtn" type="button" disabled>Selecionar todas as partes</button>
+            <button class="secondary compact-action" id="clearPartSelectionBtn" type="button" disabled>Limpar seleção</button>
+          </div>
+        </div>
+        <div class="parts-list" id="splitParts" aria-live="polite"></div>
+
+        <div class="thumbs-wrap" id="thumbsWrap">
+          <div class="thumbs-header">
+            <h3>Miniaturas das páginas</h3>
+          </div>
+          <div class="thumbnail-grid" id="thumbnailGrid"></div>
+          <p class="preview-note">As etiquetas P1, P2, P3 indicam a parte em que cada página será incluída. Selecione as partes pelas caixas acima.</p>
+        </div>
+
+        <div class="actions">
+          <button class="primary" id="splitBtn" type="button" disabled>Baixar partes selecionadas</button>
+        </div>
+        <p class="status" id="splitStatus" aria-live="polite"></p>
+      </article>
+    </section>
+
+    <footer>
+      <div>Arquivos protegidos por senha ou corrompidos podem não ser processados.</div>
+      <div>Contato: livialagegarcia@gmail.com</div>
+    </footer>
+  </main>
+
+  <script type="module">
+    import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs";
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs";
+    window.pdfjsLib = pdfjsLib;
+  </script>
+
+  <script>
+    const { PDFDocument } = PDFLib;
+
+    const merge = {
+      files: [],
+      input: document.getElementById("mergeInput"),
+      dropZone: document.getElementById("mergeDropZone"),
+      list: document.getElementById("mergeList"),
+      mergeButton: document.getElementById("mergeBtn"),
+      clearButton: document.getElementById("clearMergeBtn"),
+      status: document.getElementById("mergeStatus")
+    };
+
+    const images = {
+      files: [],
+      input: document.getElementById("imageInput"),
+      dropZone: document.getElementById("imageDropZone"),
+      list: document.getElementById("imageList"),
+      convertButton: document.getElementById("imagesToPdfBtn"),
+      clearButton: document.getElementById("clearImagesBtn"),
+      status: document.getElementById("imageStatus")
+    };
+
+    const split = {
+      file: null,
+      pdfJsDocument: null,
+      totalPages: 0,
+      cuts: [],
+      parts: [],
+      input: document.getElementById("splitInput"),
+      dropZone: document.getElementById("splitDropZone"),
+      list: document.getElementById("splitList"),
+      intervalEditor: document.getElementById("intervalEditor"),
+      addIntervalButton: document.getElementById("addIntervalBtn"),
+      selectAllPartsButton: document.getElementById("selectAllPartsBtn"),
+      clearPartSelectionButton: document.getElementById("clearPartSelectionBtn"),
+      intervalError: document.getElementById("intervalError"),
+      partsList: document.getElementById("splitParts"),
+      thumbsWrap: document.getElementById("thumbsWrap"),
+      thumbnailGrid: document.getElementById("thumbnailGrid"),
+      splitButton: document.getElementById("splitBtn"),
+      status: document.getElementById("splitStatus")
+    };
+
+    function setStatus(element, message = "", type = "") {
+      element.textContent = message;
+      element.className = "status" + (type ? " " + type : "");
+    }
+
+    function isPdf(file) {
+      return file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    }
+
+    function isImage(file) {
+      const allowed = ["image/jpeg", "image/png", "image/webp"];
+      return allowed.includes(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
+    }
+
+    function downloadBlob(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    function setupDropZone(dropZone, callback) {
+      ["dragenter", "dragover"].forEach(name => {
+        dropZone.addEventListener(name, event => {
+          event.preventDefault();
+          event.stopPropagation();
+          dropZone.classList.add("dragover");
+        });
+      });
+
+      ["dragleave", "drop"].forEach(name => {
+        dropZone.addEventListener(name, event => {
+          event.preventDefault();
+          event.stopPropagation();
+          dropZone.classList.remove("dragover");
+        });
+      });
+
+      dropZone.addEventListener("drop", event => callback([...event.dataTransfer.files]));
+    }
+
+    function renderMergeList() {
+      merge.list.innerHTML = "";
+      merge.files.forEach((file, index) => {
+        const li = document.createElement("li");
+        li.draggable = true;
+        li.dataset.index = index;
+
+        const handle = document.createElement("span");
+        handle.className = "drag-handle";
+        handle.textContent = "⠿";
+        handle.title = "Arraste para reorganizar";
+
+        const name = document.createElement("span");
+        name.className = "file-name";
+        name.textContent = `${index + 1}. ${file.name}`;
+
+        const remove = document.createElement("button");
+        remove.className = "remove";
+        remove.type = "button";
+        remove.textContent = "Remover";
+        remove.addEventListener("click", () => {
+          merge.files.splice(index, 1);
+          renderMergeList();
+        });
+
+        li.addEventListener("dragstart", event => {
+          li.classList.add("dragging");
+          event.dataTransfer.effectAllowed = "move";
+          event.dataTransfer.setData("text/plain", String(index));
+        });
+
+        li.addEventListener("dragend", () => li.classList.remove("dragging"));
+
+        li.addEventListener("dragover", event => {
+          event.preventDefault();
+          event.dataTransfer.dropEffect = "move";
+        });
+
+        li.addEventListener("drop", event => {
+          event.preventDefault();
+          const from = Number(event.dataTransfer.getData("text/plain"));
+          const to = Number(li.dataset.index);
+          if (Number.isInteger(from) && from !== to) {
+            const [moved] = merge.files.splice(from, 1);
+            merge.files.splice(to, 0, moved);
+            renderMergeList();
+          }
+        });
+
+        li.append(handle, name, remove);
+        merge.list.appendChild(li);
+      });
+
+      merge.mergeButton.disabled = merge.files.length < 2;
+      merge.clearButton.disabled = merge.files.length === 0;
+    }
+
+    function addMergeFiles(files) {
+      const valid = files.filter(isPdf);
+      if (valid.length !== files.length) {
+        setStatus(merge.status, "Alguns arquivos foram ignorados porque não são PDFs.", "error");
+      }
+      merge.files.push(...valid);
+      renderMergeList();
+    }
+
+    merge.input.addEventListener("change", event => {
+      addMergeFiles([...event.target.files]);
+      merge.input.value = "";
+    });
+
+    merge.clearButton.addEventListener("click", () => {
+      merge.files = [];
+      renderMergeList();
+      setStatus(merge.status);
+    });
+
+    setupDropZone(merge.dropZone, addMergeFiles);
+
+    merge.mergeButton.addEventListener("click", async () => {
+      if (merge.files.length < 2) return;
+
+      merge.mergeButton.disabled = true;
+      merge.clearButton.disabled = true;
+      setStatus(merge.status, "Unindo PDFs...");
+
+      try {
+        const output = await PDFDocument.create();
+
+        for (const file of merge.files) {
+          const source = await PDFDocument.load(await file.arrayBuffer());
+          const pages = await output.copyPages(source, source.getPageIndices());
+          pages.forEach(page => output.addPage(page));
+        }
+
+        const bytes = await output.save();
+        downloadBlob(new Blob([bytes], { type: "application/pdf" }), "PDF_Unido.pdf");
+        setStatus(merge.status, "PDF unido com sucesso.", "success");
+      } catch (error) {
+        console.error(error);
+        setStatus(merge.status, "Não foi possível unir os arquivos. Verifique se os PDFs estão válidos e sem senha.", "error");
+      } finally {
+        renderMergeList();
+      }
+    });
+
+    function renderImageList() {
+      images.list.innerHTML = "";
+      images.files.forEach((file, index) => {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        name.className = "file-name";
+        name.textContent = `${index + 1}. ${file.name}`;
+
+        const remove = document.createElement("button");
+        remove.className = "remove";
+        remove.type = "button";
+        remove.textContent = "Remover";
+        remove.addEventListener("click", () => {
+          images.files.splice(index, 1);
+          renderImageList();
+        });
+
+        li.append(name, remove);
+        images.list.appendChild(li);
+      });
+
+      images.convertButton.disabled = images.files.length === 0;
+      images.clearButton.disabled = images.files.length === 0;
+    }
+
+    function addImages(files) {
+      const valid = files.filter(isImage);
+      if (valid.length !== files.length) {
+        setStatus(images.status, "Alguns arquivos foram ignorados porque não são imagens JPG, PNG ou WEBP.", "error");
+      }
+      images.files.push(...valid);
+      renderImageList();
+    }
+
+    images.input.addEventListener("change", event => {
+      addImages([...event.target.files]);
+      images.input.value = "";
+    });
+
+    images.clearButton.addEventListener("click", () => {
+      images.files = [];
+      renderImageList();
+      setStatus(images.status);
+    });
+
+    setupDropZone(images.dropZone, addImages);
+
+    images.convertButton.addEventListener("click", async () => {
+      if (!images.files.length) return;
+
+      images.convertButton.disabled = true;
+      images.clearButton.disabled = true;
+      setStatus(images.status, "Convertendo imagens...");
+
+      try {
+        const output = await PDFDocument.create();
+
+        for (const file of images.files) {
+          const bytes = await file.arrayBuffer();
+          let embedded;
+          if (file.type === "image/png" || /\.png$/i.test(file.name)) {
+            embedded = await output.embedPng(bytes);
+          } else {
+            embedded = await output.embedJpg(bytes);
+          }
+
+          const page = output.addPage([embedded.width, embedded.height]);
+          page.drawImage(embedded, {
+            x: 0,
+            y: 0,
+            width: embedded.width,
+            height: embedded.height
+          });
+        }
+
+        const pdfBytes = await output.save();
+        downloadBlob(new Blob([pdfBytes], { type: "application/pdf" }), "Imagens_Convertidas.pdf");
+        setStatus(images.status, "PDF criado com sucesso.", "success");
+      } catch (error) {
+        console.error(error);
+        setStatus(images.status, "Não foi possível converter uma ou mais imagens.", "error");
+      } finally {
+        renderImageList();
+      }
+    });
+
+    function renderSplitFile() {
+      split.list.innerHTML = "";
+
+      if (split.file) {
+        const li = document.createElement("li");
+        const name = document.createElement("span");
+        name.className = "file-name";
+        name.textContent = `${split.file.name} — ${split.totalPages || "…"} página(s)`;
+
+        const remove = document.createElement("button");
+        remove.className = "remove";
+        remove.type = "button";
+        remove.textContent = "Remover";
+        remove.addEventListener("click", resetSplit);
+
+        li.append(name, remove);
+        split.list.appendChild(li);
+      }
+
+      const hasFile = Boolean(split.file && split.totalPages);
+      split.addIntervalButton.disabled = !hasFile || split.cuts.length >= Math.max(0, split.totalPages - 1);
+      split.selectAllPartsButton.disabled = !hasFile || !split.parts.length;
+      split.clearPartSelectionButton.disabled = !hasFile || !split.parts.length;
+      split.splitButton.disabled = !hasFile || !split.parts.some(part => part.selected);
+    }
+
+    function resetSplit() {
+      split.file = null;
+      split.pdfJsDocument = null;
+      split.totalPages = 0;
+      split.cuts = [];
+      split.parts = [];
+      split.thumbnailGrid.innerHTML = "";
+      split.partsList.innerHTML = "";
+      split.intervalEditor.innerHTML = "";
+      split.intervalError.textContent = "";
+      split.thumbsWrap.classList.remove("visible");
+      renderSplitFile();
+      setStatus(split.status);
+    }
+
+    function normalizeCuts() {
+      split.cuts = split.cuts
+        .map(value => Number(value))
+        .filter(value => Number.isInteger(value))
+        .sort((a, b) => a - b);
+
+      const unique = [];
+      for (const cut of split.cuts) {
+        if (cut >= 1 && cut < split.totalPages && !unique.includes(cut)) unique.push(cut);
+      }
+      split.cuts = unique;
+    }
+
+    function buildPartsFromCuts() {
+      normalizeCuts();
+      const bounds = [...split.cuts, split.totalPages];
+      let startPage = 1;
+      const previousSelection = new Map(split.parts.map(part => [part.key, part.selected]));
+      const parts = [];
+
+      for (let index = 0; index < bounds.length; index++) {
+        const endPage = bounds[index];
+        if (endPage < startPage) continue;
+        const pages = Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+        const key = `${startPage}-${endPage}`;
+        parts.push({
+          key,
+          label: `Parte ${parts.length + 1}`,
+          start: startPage,
+          end: endPage,
+          pages,
+          selected: previousSelection.has(key) ? previousSelection.get(key) : true
+        });
+        startPage = endPage + 1;
+      }
+
+      split.parts = parts;
+    }
+
+    function renderIntervalEditor() {
+      split.intervalEditor.innerHTML = "";
+      split.intervalError.textContent = "";
+
+      if (!split.totalPages) return;
+
+      let startPage = 1;
+
+      split.cuts.forEach((endPage, index) => {
+        const card = document.createElement("div");
+        card.className = "interval-card";
+
+        const label = document.createElement("label");
+        label.textContent = `Parte ${index + 1}`;
+
+        const startText = document.createElement("span");
+        startText.className = "interval-label";
+        startText.textContent = `De ${startPage}`;
+
+        const input = document.createElement("input");
+        input.className = "text-input";
+        input.type = "number";
+        input.min = startPage;
+        input.max = split.totalPages - 1;
+        input.value = endPage;
+        input.title = "Última página desta parte";
+        input.setAttribute("aria-label", `Última página da parte ${index + 1}`);
+
+        const endText = document.createElement("span");
+        endText.className = "interval-label";
+        endText.textContent = "até";
+
+        const remove = document.createElement("button");
+        remove.className = "remove";
+        remove.type = "button";
+        remove.textContent = "Excluir";
+        remove.title = "Remover este intervalo";
+
+        input.addEventListener("change", () => {
+          const value = Number(input.value);
+          const previousCut = index === 0 ? 0 : split.cuts[index - 1];
+          const nextCut = index === split.cuts.length - 1 ? split.totalPages : split.cuts[index + 1];
+
+          if (!Number.isInteger(value) || value <= previousCut || value >= nextCut || value >= split.totalPages) {
+            split.intervalError.textContent = `O fim da Parte ${index + 1} deve ficar entre ${previousCut + 1} e ${nextCut - 1}.`;
+            renderIntervalEditor();
+            return;
+          }
+
+          split.cuts[index] = value;
+          refreshSplitStructure();
+        });
+
+        remove.addEventListener("click", () => {
+          split.cuts.splice(index, 1);
+          refreshSplitStructure();
+        });
+
+        card.append(label, startText, endText, input, remove);
+        split.intervalEditor.appendChild(card);
+        startPage = endPage + 1;
+      });
+
+      const autoCard = document.createElement("div");
+      autoCard.className = "interval-card auto";
+
+      const autoLabel = document.createElement("label");
+      autoLabel.textContent = `Parte ${split.cuts.length + 1} — restante automático`;
+
+      const autoRange = document.createElement("span");
+      autoRange.className = "interval-range";
+      autoRange.textContent = startPage <= split.totalPages
+        ? `Páginas ${startPage} até ${split.totalPages}`
+        : "Nenhuma página restante";
+
+      const autoHint = document.createElement("span");
+      autoHint.className = "interval-label";
+      autoHint.textContent = "Esta parte é atualizada automaticamente.";
+
+      autoCard.append(autoLabel, autoRange, autoHint);
+      split.intervalEditor.appendChild(autoCard);
+    }
+
+    function updatePartSummary() {
+      split.partsList.innerHTML = "";
+
+      split.parts.forEach((part, index) => {
+        const chip = document.createElement("label");
+        chip.className = "part-chip";
+        chip.title = `Parte ${index + 1}: páginas ${part.start} a ${part.end}`;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "part-select";
+        checkbox.checked = part.selected;
+        checkbox.setAttribute("aria-label", `Selecionar ${part.label}`);
+
+        checkbox.addEventListener("change", () => {
+          part.selected = checkbox.checked;
+          renderSplitFile();
+        });
+
+        const text = document.createElement("span");
+        text.innerHTML = `<strong>${part.label}</strong> — páginas ${part.start}-${part.end}`;
+
+        chip.append(checkbox, text);
+        split.partsList.appendChild(chip);
+      });
+    }
+
+    function partNumberForPage(pageNumber) {
+      const index = split.parts.findIndex(part => pageNumber >= part.start && pageNumber <= part.end);
+      return index >= 0 ? index + 1 : null;
+    }
+
+    function updateThumbnailStates() {
+      [...split.thumbnailGrid.querySelectorAll(".page-thumb")].forEach(card => {
+        const page = Number(card.dataset.page);
+        const oldBadge = card.querySelector(".page-part-badge");
+        if (oldBadge) oldBadge.remove();
+
+        const partNumber = partNumberForPage(page);
+        if (partNumber) {
+          const badge = document.createElement("span");
+          badge.className = "page-part-badge";
+          badge.textContent = `P${partNumber}`;
+          card.appendChild(badge);
+        }
+      });
+    }
+
+    function refreshSplitStructure() {
+      buildPartsFromCuts();
+      renderIntervalEditor();
+      updatePartSummary();
+      updateThumbnailStates();
+      renderSplitFile();
+    }
+
+    async function renderThumbnails() {
+      if (!split.pdfJsDocument) return;
+      split.thumbnailGrid.innerHTML = "";
+      split.thumbsWrap.classList.add("visible");
+
+      for (let pageNumber = 1; pageNumber <= split.pdfJsDocument.numPages; pageNumber++) {
+        const card = document.createElement("div");
+        card.className = "page-thumb";
+        card.dataset.page = pageNumber;
+
+        const canvas = document.createElement("canvas");
+        const label = document.createElement("span");
+        label.className = "page-number";
+        label.textContent = `Página ${pageNumber}`;
+
+        card.append(canvas, label);
+        split.thumbnailGrid.appendChild(card);
+
+        try {
+          const page = await split.pdfJsDocument.getPage(pageNumber);
+          const initialViewport = page.getViewport({ scale: 1 });
+          const targetWidth = 170;
+          const scale = Math.min(targetWidth / initialViewport.width, 0.23);
+          const viewport = page.getViewport({ scale });
+          const outputScale = window.devicePixelRatio || 1;
+
+          canvas.width = Math.floor(viewport.width * outputScale);
+          canvas.height = Math.floor(viewport.height * outputScale);
+          canvas.style.width = `${Math.floor(viewport.width)}px`;
+          canvas.style.height = `${Math.floor(viewport.height)}px`;
+
+          const context = canvas.getContext("2d");
+          await page.render({
+            canvasContext: context,
+            viewport,
+            transform: outputScale === 1 ? null : [outputScale, 0, 0, outputScale, 0, 0]
+          }).promise;
+        } catch (error) {
+          canvas.remove();
+          const unavailable = document.createElement("span");
+          unavailable.className = "page-number";
+          unavailable.textContent = "Miniatura indisponível";
+          card.prepend(unavailable);
+        }
+      }
+      updateThumbnailStates();
+    }
+
+    async function setSplitFile(files) {
+      const file = files.find(isPdf);
+      if (!file) {
+        setStatus(split.status, "Selecione um arquivo PDF.", "error");
+        return;
+      }
+
+      resetSplit();
+      split.file = file;
+      split.thumbsWrap.classList.add("visible");
+      renderSplitFile();
+      setStatus(split.status, "Gerando miniaturas das páginas...");
+
+      try {
+        while (!window.pdfjsLib) {
+          await new Promise(resolve => setTimeout(resolve, 50));
+        }
+
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        split.pdfJsDocument = await window.pdfjsLib.getDocument({ data: bytes }).promise;
+        split.totalPages = split.pdfJsDocument.numPages;
+        split.cuts = [];
+        buildPartsFromCuts();
+        renderIntervalEditor();
+        updatePartSummary();
+        renderSplitFile();
+        await renderThumbnails();
+        setStatus(split.status, `${split.totalPages} página(s) carregada(s). Defina os cortes nas caixas e selecione as partes que deseja baixar.`, "success");
+      } catch (error) {
+        console.error(error);
+        resetSplit();
+        setStatus(split.status, "Não foi possível abrir o PDF para gerar as miniaturas.", "error");
+      }
+    }
+
+    split.input.addEventListener("change", event => {
+      setSplitFile([...event.target.files]);
+      split.input.value = "";
+    });
+
+    setupDropZone(split.dropZone, setSplitFile);
+
+    split.addIntervalButton.addEventListener("click", () => {
+      if (!split.totalPages) return;
+      const lastCut = split.cuts.length ? split.cuts[split.cuts.length - 1] : 0;
+      const automaticStart = lastCut + 1;
+      const automaticEnd = split.totalPages;
+      if (automaticEnd - automaticStart < 1) {
+        split.intervalError.textContent = "Não há páginas suficientes para criar outro intervalo.";
+        return;
+      }
+
+      const suggestedCut = Math.min(automaticEnd - 1, automaticStart);
+      split.cuts.push(suggestedCut);
+      refreshSplitStructure();
+    });
+
+    split.selectAllPartsButton.addEventListener("click", () => {
+      split.parts.forEach(part => part.selected = true);
+      updatePartSummary();
+      renderSplitFile();
+    });
+
+    split.clearPartSelectionButton.addEventListener("click", () => {
+      split.parts.forEach(part => part.selected = false);
+      updatePartSummary();
+      renderSplitFile();
+    });
+
+    split.splitButton.addEventListener("click", async () => {
+      const selectedParts = split.parts.filter(part => part.selected);
+      if (!split.file || !selectedParts.length) return;
+
+      split.splitButton.disabled = true;
+      setStatus(split.status, "Gerando os PDFs selecionados...");
+
+      try {
+        const source = await PDFDocument.load(await split.file.arrayBuffer());
+
+        for (let index = 0; index < selectedParts.length; index++) {
+          const part = selectedParts[index];
+          const output = await PDFDocument.create();
+          const copiedPages = await output.copyPages(source, part.pages.map(page => page - 1));
+          copiedPages.forEach(page => output.addPage(page));
+
+          const bytes = await output.save();
+          downloadBlob(
+            new Blob([bytes], { type: "application/pdf" }),
+            `parte_${String(split.parts.indexOf(part) + 1).padStart(2, "0")}_paginas_${part.start}-${part.end}.pdf`
+          );
+          await new Promise(resolve => setTimeout(resolve, 180));
+        }
+
+        setStatus(split.status, `${selectedParts.length} PDF(s) selecionado(s) foram gerados.`, "success");
+      } catch (error) {
+        console.error(error);
+        setStatus(split.status, "Não foi possível gerar as partes selecionadas.", "error");
+      } finally {
+        renderSplitFile();
+      }
+    });
+
+  </script>
+</body>
+</html>
